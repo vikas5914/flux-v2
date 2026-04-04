@@ -1,4 +1,5 @@
 const LMSCRIPT_ORIGIN = process.env.LMSCRIPT_ORIGIN || "https://lmscript.xyz";
+const PROXY_BASE = "https://proxy.killcors.com/?url=";
 const LMSCRIPT_API_BASE = `${LMSCRIPT_ORIGIN}/v1`;
 
 export const LMSCRIPT_CACHE_CONTROL = "public, max-age=86400, stale-while-revalidate=86400";
@@ -7,17 +8,24 @@ export const LMSCRIPT_IMAGE_CACHE_CONTROL = "public, max-age=31536000, immutable
 export const LMSCRIPT_IMAGE_CDN_CACHE_CONTROL = "max-age=31536000";
 
 export function resolveLmscriptUrl(value: string) {
-  if (value.startsWith("http://")) return value;
-  if (value.startsWith("https://")) return value;
-  return new URL(value, LMSCRIPT_ORIGIN).toString();
+  let url: string;
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    url = value;
+  } else {
+    url = new URL(value, LMSCRIPT_ORIGIN).toString();
+  }
+  return `${PROXY_BASE}${encodeURIComponent(url)}`;
 }
 
 export async function fetchLmscriptJson(path: string) {
-  const response = await fetch(`${LMSCRIPT_API_BASE}${path}`, {
-    headers: {
-      accept: "application/json",
+  const response = await fetch(
+    `${PROXY_BASE}${encodeURIComponent(`${LMSCRIPT_API_BASE}${path}`)}`,
+    {
+      headers: {
+        accept: "application/json",
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch lmscript data: ${response.status} ${response.statusText}`);

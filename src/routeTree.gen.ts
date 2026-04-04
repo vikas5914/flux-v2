@@ -9,65 +9,107 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
+import { Route as WatchMovieIdRouteImport } from './routes/watch.$movieId'
+import { Route as MovieMovieIdRouteImport } from './routes/movie.$movieId'
+import { Route as ApiSubtitlesRouteImport } from './routes/api/subtitles'
+import { Route as ApiStreamRouteImport } from './routes/api/stream'
+import { Route as ApiImageRouteImport } from './routes/api/image'
 
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
-  id: '/demo/tanstack-query',
-  path: '/demo/tanstack-query',
+const WatchMovieIdRoute = WatchMovieIdRouteImport.update({
+  id: '/watch/$movieId',
+  path: '/watch/$movieId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MovieMovieIdRoute = MovieMovieIdRouteImport.update({
+  id: '/movie/$movieId',
+  path: '/movie/$movieId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSubtitlesRoute = ApiSubtitlesRouteImport.update({
+  id: '/api/subtitles',
+  path: '/api/subtitles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStreamRoute = ApiStreamRouteImport.update({
+  id: '/api/stream',
+  path: '/api/stream',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiImageRoute = ApiImageRouteImport.update({
+  id: '/api/image',
+  path: '/api/image',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/api/image': typeof ApiImageRoute
+  '/api/stream': typeof ApiStreamRoute
+  '/api/subtitles': typeof ApiSubtitlesRoute
+  '/movie/$movieId': typeof MovieMovieIdRoute
+  '/watch/$movieId': typeof WatchMovieIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/api/image': typeof ApiImageRoute
+  '/api/stream': typeof ApiStreamRoute
+  '/api/subtitles': typeof ApiSubtitlesRoute
+  '/movie/$movieId': typeof MovieMovieIdRoute
+  '/watch/$movieId': typeof WatchMovieIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/api/image': typeof ApiImageRoute
+  '/api/stream': typeof ApiStreamRoute
+  '/api/subtitles': typeof ApiSubtitlesRoute
+  '/movie/$movieId': typeof MovieMovieIdRoute
+  '/watch/$movieId': typeof WatchMovieIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/demo/tanstack-query'
+  fullPaths:
+    | '/'
+    | '/api/image'
+    | '/api/stream'
+    | '/api/subtitles'
+    | '/movie/$movieId'
+    | '/watch/$movieId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/demo/tanstack-query'
-  id: '__root__' | '/' | '/about' | '/demo/tanstack-query'
+  to:
+    | '/'
+    | '/api/image'
+    | '/api/stream'
+    | '/api/subtitles'
+    | '/movie/$movieId'
+    | '/watch/$movieId'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/image'
+    | '/api/stream'
+    | '/api/subtitles'
+    | '/movie/$movieId'
+    | '/watch/$movieId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  ApiImageRoute: typeof ApiImageRoute
+  ApiStreamRoute: typeof ApiStreamRoute
+  ApiSubtitlesRoute: typeof ApiSubtitlesRoute
+  MovieMovieIdRoute: typeof MovieMovieIdRoute
+  WatchMovieIdRoute: typeof WatchMovieIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -75,11 +117,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryRouteImport
+    '/watch/$movieId': {
+      id: '/watch/$movieId'
+      path: '/watch/$movieId'
+      fullPath: '/watch/$movieId'
+      preLoaderRoute: typeof WatchMovieIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/movie/$movieId': {
+      id: '/movie/$movieId'
+      path: '/movie/$movieId'
+      fullPath: '/movie/$movieId'
+      preLoaderRoute: typeof MovieMovieIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/subtitles': {
+      id: '/api/subtitles'
+      path: '/api/subtitles'
+      fullPath: '/api/subtitles'
+      preLoaderRoute: typeof ApiSubtitlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stream': {
+      id: '/api/stream'
+      path: '/api/stream'
+      fullPath: '/api/stream'
+      preLoaderRoute: typeof ApiStreamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/image': {
+      id: '/api/image'
+      path: '/api/image'
+      fullPath: '/api/image'
+      preLoaderRoute: typeof ApiImageRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -87,8 +157,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  ApiImageRoute: ApiImageRoute,
+  ApiStreamRoute: ApiStreamRoute,
+  ApiSubtitlesRoute: ApiSubtitlesRoute,
+  MovieMovieIdRoute: MovieMovieIdRoute,
+  WatchMovieIdRoute: WatchMovieIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchMovieIdRouteImport } from './routes/watch.$movieId'
 import { Route as MovieMovieIdRouteImport } from './routes/movie.$movieId'
 import { Route as ApiSubtitlesRouteImport } from './routes/api/subtitles'
+import { Route as ApiStreamProxyRouteImport } from './routes/api/stream-proxy'
 import { Route as ApiStreamRouteImport } from './routes/api/stream'
 import { Route as ApiImageRouteImport } from './routes/api/image'
 
@@ -36,6 +37,11 @@ const ApiSubtitlesRoute = ApiSubtitlesRouteImport.update({
   path: '/api/subtitles',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStreamProxyRoute = ApiStreamProxyRouteImport.update({
+  id: '/api/stream-proxy',
+  path: '/api/stream-proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStreamRoute = ApiStreamRouteImport.update({
   id: '/api/stream',
   path: '/api/stream',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/image': typeof ApiImageRoute
   '/api/stream': typeof ApiStreamRoute
+  '/api/stream-proxy': typeof ApiStreamProxyRoute
   '/api/subtitles': typeof ApiSubtitlesRoute
   '/movie/$movieId': typeof MovieMovieIdRoute
   '/watch/$movieId': typeof WatchMovieIdRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/image': typeof ApiImageRoute
   '/api/stream': typeof ApiStreamRoute
+  '/api/stream-proxy': typeof ApiStreamProxyRoute
   '/api/subtitles': typeof ApiSubtitlesRoute
   '/movie/$movieId': typeof MovieMovieIdRoute
   '/watch/$movieId': typeof WatchMovieIdRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/api/image': typeof ApiImageRoute
   '/api/stream': typeof ApiStreamRoute
+  '/api/stream-proxy': typeof ApiStreamProxyRoute
   '/api/subtitles': typeof ApiSubtitlesRoute
   '/movie/$movieId': typeof MovieMovieIdRoute
   '/watch/$movieId': typeof WatchMovieIdRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/image'
     | '/api/stream'
+    | '/api/stream-proxy'
     | '/api/subtitles'
     | '/movie/$movieId'
     | '/watch/$movieId'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/image'
     | '/api/stream'
+    | '/api/stream-proxy'
     | '/api/subtitles'
     | '/movie/$movieId'
     | '/watch/$movieId'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/image'
     | '/api/stream'
+    | '/api/stream-proxy'
     | '/api/subtitles'
     | '/movie/$movieId'
     | '/watch/$movieId'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiImageRoute: typeof ApiImageRoute
   ApiStreamRoute: typeof ApiStreamRoute
+  ApiStreamProxyRoute: typeof ApiStreamProxyRoute
   ApiSubtitlesRoute: typeof ApiSubtitlesRoute
   MovieMovieIdRoute: typeof MovieMovieIdRoute
   WatchMovieIdRoute: typeof WatchMovieIdRoute
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSubtitlesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/stream-proxy': {
+      id: '/api/stream-proxy'
+      path: '/api/stream-proxy'
+      fullPath: '/api/stream-proxy'
+      preLoaderRoute: typeof ApiStreamProxyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stream': {
       id: '/api/stream'
       path: '/api/stream'
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiImageRoute: ApiImageRoute,
   ApiStreamRoute: ApiStreamRoute,
+  ApiStreamProxyRoute: ApiStreamProxyRoute,
   ApiSubtitlesRoute: ApiSubtitlesRoute,
   MovieMovieIdRoute: MovieMovieIdRoute,
   WatchMovieIdRoute: WatchMovieIdRoute,

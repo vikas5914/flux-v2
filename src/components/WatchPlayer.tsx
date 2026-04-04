@@ -372,7 +372,7 @@ function QualityMenu({ movie }: { movie: MovieDetail }) {
         source.loadSource(`/api/stream?movieId=${movie.id}`);
       } else {
         const variant = movie.streams.find((s) => s.label === label);
-        if (variant) source.loadSource(variant.directUrl);
+        if (variant) source.loadSource(variant.url);
       }
 
       if (media && resumeTime > 0) {
@@ -550,7 +550,7 @@ function PlayerSkin({
   return (
     <Player.Provider>
       <Player.Container className="media-default-skin media-default-skin--video">
-        <Video src={movie.streams[0].directUrl} playsInline crossOrigin="anonymous">
+        <Video src={movie.streams[0].url} playsInline crossOrigin="anonymous">
           {englishSubs.map((sub, i) => (
             <track
               key={sub.id}

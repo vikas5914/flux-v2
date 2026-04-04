@@ -31,7 +31,6 @@ export interface MovieCastMember {
 export interface MovieStreamVariant {
   label: string;
   url: string;
-  directUrl: string;
   resolution: number;
 }
 
@@ -219,11 +218,6 @@ export function getSubtitleProxyUrl(movieId: number, subtitleId: string) {
   return `/api/subtitles?movieId=${movieId}&subtitleId=${encodeURIComponent(subtitleId)}`;
 }
 
-function resolveDirectUrl(rawUrl: string): string {
-  if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) return rawUrl;
-  return new URL(rawUrl, "https://lmscript.xyz").toString();
-}
-
 function getImageProxyUrl(rawUrl: string) {
   if (!rawUrl) return "";
   const url = new URL(rawUrl, "https://lmscript.xyz");
@@ -343,7 +337,6 @@ function normalizeStreams(raw: unknown, movieId: number): MovieStreamVariant[] {
         return {
           label: "source",
           url: `/api/stream?movieId=${movieId}`,
-          directUrl: resolveDirectUrl(entry),
           resolution: 0,
         } satisfies MovieStreamVariant;
       }
@@ -360,8 +353,7 @@ function normalizeStreams(raw: unknown, movieId: number): MovieStreamVariant[] {
 
       return {
         label: label || "source",
-        url: `/api/stream?movieId=${movieId}`,
-        directUrl: resolveDirectUrl(rawUrl),
+        url: `/api/stream?movieId=${movieId}&quality=${encodeURIComponent(label || "source")}`,
         resolution,
       } satisfies MovieStreamVariant;
     })

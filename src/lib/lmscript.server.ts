@@ -1,5 +1,4 @@
 const LMSCRIPT_ORIGIN = process.env.LMSCRIPT_ORIGIN || "https://lmscript.xyz";
-const PROXY_BASE = "https://proxy.killcors.com/?url=";
 const LMSCRIPT_API_BASE = `${LMSCRIPT_ORIGIN}/v1`;
 
 export const LMSCRIPT_CACHE_CONTROL = "public, max-age=86400, stale-while-revalidate=86400";
@@ -8,24 +7,32 @@ export const LMSCRIPT_IMAGE_CACHE_CONTROL = "public, max-age=31536000, immutable
 export const LMSCRIPT_IMAGE_CDN_CACHE_CONTROL = "max-age=31536000";
 
 export function resolveLmscriptUrl(value: string) {
-  let url: string;
   if (value.startsWith("http://") || value.startsWith("https://")) {
-    url = value;
-  } else {
-    url = new URL(value, LMSCRIPT_ORIGIN).toString();
+    return value;
   }
-  return `${PROXY_BASE}${encodeURIComponent(url)}`;
+  return new URL(value, LMSCRIPT_ORIGIN).toString();
+}
+
+/**
+ * Fetch from an upstream URL, spoofing the Origin header so the remote host
+ * treats the request as same-origin (same technique as the CORS reverse-proxy
+ * worker the user validated manually).
+ */
+function fetchUpstream(url: string, extraHeaders?: Record<string, string>) {
+  const target = new URL(url);
+  const req = new Request(url, {
+    headers: {
+      Origin: target.origin,
+      ...extraHeaders,
+    },
+  });
+  return fetch(req);
 }
 
 export async function fetchLmscriptJson(path: string) {
-  const response = await fetch(
-    `${PROXY_BASE}${encodeURIComponent(`${LMSCRIPT_API_BASE}${path}`)}`,
-    {
-      headers: {
-        accept: "application/json",
-      },
-    },
-  );
+  const response = await fetchUpstream(`${LMSCRIPT_API_BASE}${path}`, {
+    accept: "application/json",
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch lmscript data: ${response.status} ${response.statusText}`);
@@ -35,10 +42,8 @@ export async function fetchLmscriptJson(path: string) {
 }
 
 export async function fetchLmscriptText(url: string) {
-  const response = await fetch(resolveLmscriptUrl(url), {
-    headers: {
-      accept: "text/vtt,text/plain;q=0.9,*/*;q=0.1",
-    },
+  const response = await fetchUpstream(resolveLmscriptUrl(url), {
+    accept: "text/vtt,text/plain;q=0.9,*/*;q=0.1",
   });
 
   if (!response.ok) {
@@ -49,5 +54,5 @@ export async function fetchLmscriptText(url: string) {
 }
 
 export async function fetchLmscript(url: string) {
-  return fetch(resolveLmscriptUrl(url));
+  return fetchUpstream(resolveLmscriptUrl(url));
 }

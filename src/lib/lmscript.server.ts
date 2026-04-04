@@ -13,14 +13,14 @@ export function resolveLmscriptUrl(value: string) {
   return new URL(value, LMSCRIPT_ORIGIN).toString();
 }
 
+const CORS_PROXY = "https://proxy.killcors.com/";
+
 /**
- * Fetch from an upstream URL, spoofing the Origin header so the remote host
- * treats the request as same-origin (same technique as the standalone CORS
- * reverse-proxy worker).
+ * Fetch from an upstream URL via the killcors CORS proxy.
  */
 function fetchUpstream(url: string, extraHeaders?: Record<string, string>) {
-  const req = new Request(url);
-  req.headers.set("Origin", new URL(url).origin);
+  const proxiedUrl = `${CORS_PROXY}?url=${encodeURIComponent(url)}`;
+  const req = new Request(proxiedUrl);
   if (extraHeaders) {
     for (const [key, value] of Object.entries(extraHeaders)) {
       req.headers.set(key, value);

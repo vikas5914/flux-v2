@@ -15,17 +15,17 @@ export function resolveLmscriptUrl(value: string) {
 
 /**
  * Fetch from an upstream URL, spoofing the Origin header so the remote host
- * treats the request as same-origin (same technique as the CORS reverse-proxy
- * worker the user validated manually).
+ * treats the request as same-origin (same technique as the standalone CORS
+ * reverse-proxy worker).
  */
 function fetchUpstream(url: string, extraHeaders?: Record<string, string>) {
-  const target = new URL(url);
-  const req = new Request(url, {
-    headers: {
-      Origin: target.origin,
-      ...extraHeaders,
-    },
-  });
+  const req = new Request(url);
+  req.headers.set("Origin", new URL(url).origin);
+  if (extraHeaders) {
+    for (const [key, value] of Object.entries(extraHeaders)) {
+      req.headers.set(key, value);
+    }
+  }
   return fetch(req);
 }
 

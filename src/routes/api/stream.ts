@@ -38,10 +38,17 @@ function rewriteM3u8(body: string, baseUrl: string, selfOrigin: string): string 
     .join("\n");
 }
 
-async function fetchAndProxy(upstreamUrl: string, selfOrigin: string): Promise<Response> {
-  const req = new Request(upstreamUrl);
+async function fetchAndProxy(
+  upstreamUrl: string,
+  selfOrigin: string,
+  incomingRequest: Request,
+): Promise<Response> {
+  // Copy the incoming browser request (preserves Range, Accept, User-Agent, etc.)
+  // then point it at the upstream URL and spoof Origin so the remote host
+  // treats it as same-origin — exactly like the standalone CORS worker.
+  const req = new Request(upstreamUrl, incomingRequest);
   req.headers.set("Origin", new URL(upstreamUrl).origin);
-  const response = await fetch(req);
+  let response = await fetch(req);
 
   if (!response.ok) {
     return new Response("Upstream error", { status: 502 });
@@ -53,22 +60,20 @@ async function fetchAndProxy(upstreamUrl: string, selfOrigin: string): Promise<R
     contentType.includes("x-mpegURL") ||
     upstreamUrl.endsWith(".m3u8");
 
-  const headers = new Headers();
-  headers.set("Access-Control-Allow-Origin", "*");
-  headers.set("Cache-Control", LMSCRIPT_CACHE_CONTROL);
-  headers.set("CDN-Cache-Control", LMSCRIPT_CDN_CACHE_CONTROL);
+  // Recreate response so we can modify headers (same as the working worker)
+  response = new Response(response.body, response);
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.append("Vary", "Origin");
 
   if (isM3u8) {
     const text = await response.text();
     const rewritten = rewriteM3u8(text, upstreamUrl, selfOrigin);
-    headers.set("Content-Type", "application/vnd.apple.mpegurl");
-    return new Response(rewritten, { headers });
+    return new Response(rewritten, {
+      headers: response.headers,
+    });
   }
 
-  // Pass through segment data (ts, mp4, etc.)
-  const upstreamCt = response.headers.get("Content-Type");
-  if (upstreamCt) headers.set("Content-Type", upstreamCt);
-  return new Response(response.body, { headers });
+  return response;
 }
 
 export const Route = createFileRoute("/api/stream")({
@@ -95,7 +100,7 @@ export const Route = createFileRoute("/api/stream")({
             // Specific quality requested — proxy that variant directly
             if (quality && streams[quality]) {
               const upstreamUrl = resolveLmscriptUrl(streams[quality]);
-              return fetchAndProxy(upstreamUrl, url.origin);
+              return fetchAndProxy(upstreamUrl, url.origin, request);
             }
 
             // Master playlist — list all variants pointing back to this API

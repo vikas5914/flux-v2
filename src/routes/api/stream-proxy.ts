@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/stream-proxy")({
         return withEdgeCache(request, async () => {
           try {
             const upstreamUrl = decodeToken(search.data.t);
-            return fetchAndProxy(upstreamUrl, url.origin);
+            return fetchAndProxy(upstreamUrl, url.origin, request);
           } catch {
             return new Response("Failed to proxy stream", { status: 502 });
           }

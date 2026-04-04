@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { withEdgeCache } from "#/lib/edge-cache.server";
 import {
+  fetchLmscript,
   fetchLmscriptJson,
   LMSCRIPT_CACHE_CONTROL,
   LMSCRIPT_CDN_CACHE_CONTROL,
@@ -41,14 +42,9 @@ function rewriteM3u8(body: string, baseUrl: string, selfOrigin: string): string 
 async function fetchAndProxy(
   upstreamUrl: string,
   selfOrigin: string,
-  incomingRequest: Request,
+  _incomingRequest: Request,
 ): Promise<Response> {
-  // Copy the incoming browser request (preserves Range, Accept, User-Agent, etc.)
-  // then point it at the upstream URL and spoof Origin so the remote host
-  // treats it as same-origin — exactly like the standalone CORS worker.
-  const req = new Request(upstreamUrl, incomingRequest);
-  req.headers.set("Origin", new URL(upstreamUrl).origin);
-  let response = await fetch(req);
+  let response = await fetchLmscript(upstreamUrl);
 
   if (!response.ok) {
     return new Response("Upstream error", { status: 502 });
@@ -60,7 +56,7 @@ async function fetchAndProxy(
     contentType.includes("x-mpegURL") ||
     upstreamUrl.endsWith(".m3u8");
 
-  // Recreate response so we can modify headers (same as the working worker)
+  // Recreate response so we can modify headers
   response = new Response(response.body, response);
   response.headers.set("Access-Control-Allow-Origin", "*");
   response.headers.append("Vary", "Origin");

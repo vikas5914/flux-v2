@@ -13,13 +13,13 @@ export function resolveLmscriptUrl(value: string) {
   return new URL(value, LMSCRIPT_ORIGIN).toString();
 }
 
-const CORS_PROXY = "https://proxy.killcors.com/";
+const CORS_PROXY = "https://cors-test.digitalagents.workers.dev/corsproxy/";
 
 /**
- * Fetch from an upstream URL via the killcors CORS proxy.
+ * Fetch from an upstream URL via the CORS proxy.
  */
 function fetchUpstream(url: string, extraHeaders?: Record<string, string>) {
-  const proxiedUrl = `${CORS_PROXY}?url=${encodeURIComponent(url)}`;
+  const proxiedUrl = `${CORS_PROXY}?apiurl=${encodeURIComponent(url)}`;
   const req = new Request(proxiedUrl);
   if (extraHeaders) {
     for (const [key, value] of Object.entries(extraHeaders)) {

@@ -1,17 +1,19 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
+import { Suspense } from "react";
 import Header from "../components/Header";
 import { WatchPlayer } from "../components/WatchPlayer";
 import { getMovieDetails } from "../lib/lmscript";
 
 export const Route = createFileRoute("/watch/$movieId")({
-  loader: async ({ params, context }) => {
+  loader: ({ params, context }) => {
     const movieId = Number(params.movieId);
     if (!Number.isFinite(movieId) || movieId <= 0) {
       throw notFound();
     }
-    await context.queryClient.ensureQueryData({
+    // Fire-and-forget: don't await so the shell streams immediately
+    void context.queryClient.prefetchQuery({
       queryKey: ["lmscript", "movie", movieId],
       queryFn: () => getMovieDetails({ data: { movieId } }),
     });
@@ -27,7 +29,26 @@ export const Route = createFileRoute("/watch/$movieId")({
   ),
 });
 
+function WatchPageSkeleton() {
+  return (
+    <div className="h-screen overflow-hidden bg-[#0a0a0a]">
+      <Header />
+      <main className="flex h-full flex-col pt-14">
+        <div className="min-h-0 flex-1 animate-pulse bg-white/5" />
+      </main>
+    </div>
+  );
+}
+
 function WatchPage() {
+  return (
+    <Suspense fallback={<WatchPageSkeleton />}>
+      <WatchPageContent />
+    </Suspense>
+  );
+}
+
+function WatchPageContent() {
   const { movieId } = Route.useParams();
 
   const { data: movie } = useSuspenseQuery({

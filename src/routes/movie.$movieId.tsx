@@ -1,16 +1,18 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Clock, Play, Star } from "lucide-react";
+import { Suspense } from "react";
 import Header from "../components/Header";
 import { getMovieDetails } from "../lib/lmscript";
 
 export const Route = createFileRoute("/movie/$movieId")({
-  loader: async ({ params, context }) => {
+  loader: ({ params, context }) => {
     const movieId = Number(params.movieId);
     if (!Number.isFinite(movieId) || movieId <= 0) {
       throw notFound();
     }
-    await context.queryClient.ensureQueryData({
+    // Fire-and-forget: don't await so the shell streams immediately
+    void context.queryClient.prefetchQuery({
       queryKey: ["lmscript", "movie", movieId],
       queryFn: () => getMovieDetails({ data: { movieId } }),
     });
@@ -37,7 +39,44 @@ function formatDuration(minutes: number | null) {
   return `${hours}h ${remainder}m`;
 }
 
+function MovieDetailsSkeleton() {
+  return (
+    <div className="min-h-screen animate-pulse bg-[#0a0a0a]">
+      <Header />
+      <main className="pt-14">
+        <div className="h-[50vh] min-h-[280px] bg-white/5 sm:min-h-[400px]" />
+        <div className="relative z-10 mx-auto -mt-32 max-w-6xl px-6">
+          <div className="flex flex-col gap-8 md:flex-row">
+            <div className="hidden shrink-0 md:block">
+              <div className="h-72 w-48 rounded bg-white/10" />
+            </div>
+            <div className="flex-1">
+              <div className="mb-3 h-4 w-16 rounded bg-white/10" />
+              <div className="mb-4 h-10 w-2/3 rounded bg-white/10" />
+              <div className="mb-6 h-4 w-1/3 rounded bg-white/10" />
+              <div className="mb-8 space-y-2">
+                <div className="h-4 w-full rounded bg-white/10" />
+                <div className="h-4 w-5/6 rounded bg-white/10" />
+                <div className="h-4 w-4/6 rounded bg-white/10" />
+              </div>
+              <div className="h-10 w-32 rounded bg-white/10" />
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function MovieDetailsPage() {
+  return (
+    <Suspense fallback={<MovieDetailsSkeleton />}>
+      <MovieDetailsContent />
+    </Suspense>
+  );
+}
+
+function MovieDetailsContent() {
   const { movieId } = Route.useParams();
   const navigate = useNavigate();
 

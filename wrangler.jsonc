@@ -15,7 +15,7 @@
       "head_sampling_rate": 0.5,
     },
   },
-   "secrets": {
+  "secrets": {
     "required": ["PROXY_URL", "URL_ENCRYPTION_KEY"],
   },
 }

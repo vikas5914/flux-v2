@@ -1,6 +1,7 @@
 import { CompactEncrypt } from "jose";
 
 const PROXY_URL = process.env.PROXY_URL || "http://localhost:3000";
+const LMSCRIPT_ORIGIN = process.env.LMSCRIPT_ORIGIN || "https://lmscript.xyz";
 
 let secretKeyPromise: Promise<Uint8Array> | null = null;
 
@@ -27,5 +28,8 @@ export async function buildStreamProxyUrl(upstreamUrl: string): Promise<string> 
 
 export async function buildImageProxyUrl(upstreamUrl: string): Promise<string> {
   const encrypted = await encryptUrl(upstreamUrl);
-  return `${PROXY_URL}/image-proxy?url=${encodeURIComponent(encrypted)}`;
+  const headers = encodeURIComponent(
+    JSON.stringify({ Origin: LMSCRIPT_ORIGIN, Referer: LMSCRIPT_ORIGIN }),
+  );
+  return `${PROXY_URL}/image-proxy?url=${encodeURIComponent(encrypted)}&headers=${headers}`;
 }

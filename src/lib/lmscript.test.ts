@@ -25,8 +25,8 @@ describe("lmscript normalizers", () => {
       id: 42,
       title: "Flux Movie",
       year: 2026,
-      posterUrl: "/api/image?path=%2Fposter.webp",
-      backdropUrl: "/api/image?path=%2Fbackdrop.webp",
+      posterUrl: "/poster.webp",
+      backdropUrl: "/backdrop.webp",
     });
   });
 

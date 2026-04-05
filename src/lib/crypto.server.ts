@@ -24,3 +24,8 @@ export async function buildStreamProxyUrl(upstreamUrl: string): Promise<string> 
   const encrypted = await encryptUrl(upstreamUrl);
   return `${PROXY_URL}/m3u8-proxy?url=${encodeURIComponent(encrypted)}`;
 }
+
+export async function buildImageProxyUrl(upstreamUrl: string): Promise<string> {
+  const encrypted = await encryptUrl(upstreamUrl);
+  return `${PROXY_URL}/image-proxy?url=${encodeURIComponent(encrypted)}`;
+}

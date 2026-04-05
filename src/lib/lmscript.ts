@@ -218,10 +218,10 @@ export function getSubtitleProxyUrl(movieId: number, subtitleId: string) {
   return `/api/subtitles?movieId=${movieId}&subtitleId=${encodeURIComponent(subtitleId)}`;
 }
 
-function getImageProxyUrl(rawUrl: string) {
+function getImagePath(rawUrl: string) {
   if (!rawUrl) return "";
   const url = new URL(rawUrl, "https://lmscript.xyz");
-  return `/api/image?path=${encodeURIComponent(`${url.pathname}${url.search}`)}`;
+  return `${url.pathname}${url.search}`;
 }
 
 function normalizeMovieCard(raw: unknown): MovieCard {
@@ -236,11 +236,11 @@ function normalizeMovieCard(raw: unknown): MovieCard {
     imdbRating: toNumber(item.imdb_rating),
     country: toNullableString(item.country),
     description: toStringValue(item.description),
-    backdropUrl: getImageProxyUrl(toStringValue(item.backdrop).replace("/w780/", "/w1280/")),
+    backdropUrl: getImagePath(toStringValue(item.backdrop).replace("/w780/", "/w1280/")),
     homepageUrl: toNullableString(item.homepage),
     budget: toNumber(item.budget),
     tagline: toNullableString(item.tagline),
-    posterUrl: getImageProxyUrl(toStringValue(item.poster)),
+    posterUrl: getImagePath(toStringValue(item.poster)),
     views: toNumber(item.views),
     dateAdded: toNullableString(item.date_added),
     tmdbPrefix: toMovieIdOrNull(item.tmdb_prefix),
@@ -399,13 +399,28 @@ function normalizeSubtitles(raw: unknown, movieId: number): MovieSubtitleTrack[]
     });
 }
 
+async function encryptImageUrls<T extends MovieCard>(movie: T): Promise<T> {
+  const { buildImageProxyUrl } = await import("./crypto.server");
+  const [posterUrl, backdropUrl] = await Promise.all([
+    movie.posterUrl ? buildImageProxyUrl(resolveLmscriptUrl(movie.posterUrl)) : "",
+    movie.backdropUrl ? buildImageProxyUrl(resolveLmscriptUrl(movie.backdropUrl)) : "",
+  ]);
+  return { ...movie, posterUrl, backdropUrl };
+}
+
 export const getHomeSections = createServerFn({ method: "GET" }).handler(async () => {
   setResponseHeaders({
     "Cache-Control": LMSCRIPT_CACHE_CONTROL,
     "CDN-Cache-Control": LMSCRIPT_CDN_CACHE_CONTROL,
   });
   const data = await fetchLmscriptJson("/home/");
-  return normalizeHomeSections(data);
+  const sections = normalizeHomeSections(data);
+  return Promise.all(
+    sections.map(async (section) => ({
+      ...section,
+      items: await Promise.all(section.items.map(encryptImageUrls)),
+    })),
+  );
 });
 
 export const searchMovies = createServerFn({ method: "GET" })
@@ -429,7 +444,9 @@ export const searchMovies = createServerFn({ method: "GET" })
     }
 
     const payload = await fetchLmscriptJson(`/movies?${params.toString()}`);
-    return normalizeSearchResponse(payload);
+    const response = normalizeSearchResponse(payload);
+    response.items = await Promise.all(response.items.map(encryptImageUrls));
+    return response;
   });
 
 export const getMovieDetails = createServerFn({ method: "GET" })
@@ -448,16 +465,16 @@ export const getMovieDetails = createServerFn({ method: "GET" })
     );
     const movie = normalizeMovieDetail(payload);
 
-    // Dynamic import keeps crypto.server.ts out of the client bundle entirely
     const { buildStreamProxyUrl } = await import("./crypto.server");
 
-    // Resolve raw upstream URLs and encrypt them into proxy URLs
-    movie.streams = await Promise.all(
-      movie.streams.map(async (stream) => ({
+    // Encrypt stream URLs and image URLs into proxy URLs
+    const encryptedMovie = await encryptImageUrls(movie);
+    encryptedMovie.streams = await Promise.all(
+      encryptedMovie.streams.map(async (stream) => ({
         ...stream,
         url: await buildStreamProxyUrl(resolveLmscriptUrl(stream.url)),
       })),
     );
 
-    return movie;
+    return encryptedMovie;
   });

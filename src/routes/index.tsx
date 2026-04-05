@@ -55,12 +55,14 @@ function HomePage() {
               isLoading={isSearchLoading}
             />
           ) : (
-            sections.map((section) => (
-              <section key={section.id} className="mt-16">
-                <SectionHeading title={section.title} />
-                <ContentGrid items={section.items} />
-              </section>
-            ))
+            sections
+              .filter((section) => section.code === "featured_movies")
+              .map((section) => (
+                <section key={section.id} className="mt-16">
+                  <SectionHeading title={section.title} />
+                  <ContentGrid items={section.items} />
+                </section>
+              ))
           )}
         </div>
       </main>

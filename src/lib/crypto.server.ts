@@ -13,7 +13,7 @@ function getSecretKey(): Promise<Uint8Array> {
   return secretKeyPromise;
 }
 
-export async function encryptUrl(url: string): Promise<string> {
+async function encryptUrl(url: string): Promise<string> {
   const secret = await getSecretKey();
   return new CompactEncrypt(new TextEncoder().encode(url))
     .setProtectedHeader({ alg: "dir", enc: "A256GCM" })

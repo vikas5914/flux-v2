@@ -23,13 +23,44 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Flux",
+        title: "Flux — Watch Movies & Series",
+      },
+      {
+        name: "description",
+        content: "Search and stream movies & TV series",
+      },
+      {
+        name: "theme-color",
+        content: "#0a0a0a",
       },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "icon",
+        href: "/favicon.ico",
+        sizes: "48x48",
+      },
+      {
+        rel: "icon",
+        href: "/logo.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/apple-touch-icon-180x180.png",
+      },
+      {
+        rel: "manifest",
+        href: "/manifest.json",
+      },
+      {
+        rel: "preconnect",
+        href: "https://proxy.kapadiya.net",
       },
     ],
   }),

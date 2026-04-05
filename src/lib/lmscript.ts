@@ -5,6 +5,7 @@ import {
   fetchLmscriptJson,
   LMSCRIPT_CACHE_CONTROL,
   LMSCRIPT_CDN_CACHE_CONTROL,
+  resolveLmscriptUrl,
 } from "./lmscript.server";
 const numberValueSchema = z
   .union([z.number(), z.string().trim().min(1).transform(Number)])
@@ -38,7 +39,6 @@ export interface MovieSubtitleTrack {
   id: string;
   movieId: number;
   language: string;
-  url: string;
   proxyUrl: string;
   format: string;
   score: number | null;
@@ -266,7 +266,7 @@ function normalizeMovieCard(raw: unknown): MovieCard {
 export function normalizeMovieDetail(raw: unknown): MovieDetail {
   const item = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const movieId = toMovieId(item.id_movie ?? item.id);
-  const streams = normalizeStreams(item.streams, movieId);
+  const streams = normalizeStreams(item.streams);
   const subtitles = normalizeSubtitles(item.subtitles, movieId);
 
   return {
@@ -322,7 +322,7 @@ function normalizeSearchResponse(raw: unknown): MovieSearchResponse {
   };
 }
 
-function normalizeStreams(raw: unknown, movieId: number): MovieStreamVariant[] {
+function normalizeStreams(raw: unknown): MovieStreamVariant[] {
   if (!raw) return [];
 
   const entries = Array.isArray(raw)
@@ -336,7 +336,7 @@ function normalizeStreams(raw: unknown, movieId: number): MovieStreamVariant[] {
       if (typeof entry === "string") {
         return {
           label: "source",
-          url: `/api/stream?movieId=${movieId}`,
+          url: entry,
           resolution: 0,
         } satisfies MovieStreamVariant;
       }
@@ -353,7 +353,7 @@ function normalizeStreams(raw: unknown, movieId: number): MovieStreamVariant[] {
 
       return {
         label: label || "source",
-        url: `/api/stream?movieId=${movieId}&quality=${encodeURIComponent(label || "source")}`,
+        url: rawUrl,
         resolution,
       } satisfies MovieStreamVariant;
     })
@@ -380,7 +380,6 @@ function normalizeSubtitles(raw: unknown, movieId: number): MovieSubtitleTrack[]
         id: subtitleId,
         movieId,
         language: toStringValue(item.language) || "Unknown",
-        url: proxyUrl,
         proxyUrl,
         format: toStringValue(item.format) || "vtt",
         score: toNumber(item.score),
@@ -447,5 +446,18 @@ export const getMovieDetails = createServerFn({ method: "GET" })
     const payload = await fetchLmscriptJson(
       `/movies/view?expand=streams,subtitles&id=${data.movieId}`,
     );
-    return normalizeMovieDetail(payload);
+    const movie = normalizeMovieDetail(payload);
+
+    // Dynamic import keeps crypto.server.ts out of the client bundle entirely
+    const { buildStreamProxyUrl } = await import("./crypto.server");
+
+    // Resolve raw upstream URLs and encrypt them into proxy URLs
+    movie.streams = await Promise.all(
+      movie.streams.map(async (stream) => ({
+        ...stream,
+        url: await buildStreamProxyUrl(resolveLmscriptUrl(stream.url)),
+      })),
+    );
+
+    return movie;
   });

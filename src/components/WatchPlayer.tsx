@@ -363,17 +363,13 @@ function QualityMenu({ movie }: { movie: MovieDetail }) {
   const [activeLabel, setActiveLabel] = useState<string | null>(movie.streams[0]?.label ?? null);
 
   const handleSelect = useCallback(
-    (label: string | null) => {
+    (label: string) => {
       if (!source) return;
       const resumeTime = media ? media.currentTime : 0;
 
       setActiveLabel(label);
-      if (label === null) {
-        source.loadSource(`/api/stream?movieId=${movie.id}`);
-      } else {
-        const variant = movie.streams.find((s) => s.label === label);
-        if (variant) source.loadSource(variant.url);
-      }
+      const variant = movie.streams.find((s) => s.label === label);
+      if (variant) source.loadSource(variant.url);
 
       if (media && resumeTime > 0) {
         const seekOnReady = () => {
@@ -402,16 +398,6 @@ function QualityMenu({ movie }: { movie: MovieDetail }) {
       </Tooltip.Root>
       <Popover.Popup className="media-surface media-popover media-popover--menu">
         <ul className="media-menu" role="menu">
-          <li role="menuitem">
-            <button
-              type="button"
-              className="media-menu__item"
-              data-active={activeLabel === null ? "" : undefined}
-              onClick={() => handleSelect(null)}
-            >
-              Auto
-            </button>
-          </li>
           {movie.streams.map((stream) => (
             <li key={stream.label} role="menuitem">
               <button

@@ -13,13 +13,13 @@ export function resolveLmscriptUrl(value: string) {
   return new URL(value, LMSCRIPT_ORIGIN).toString();
 }
 
-const CORS_PROXY = "https://cors-test.digitalagents.workers.dev/corsproxy/";
+const PROXY_URL = process.env.PROXY_URL || "http://localhost:3000";
 
 /**
- * Fetch from an upstream URL via the CORS proxy.
+ * Fetch from an upstream URL via the destination proxy.
  */
 function fetchUpstream(url: string, extraHeaders?: Record<string, string>) {
-  const proxiedUrl = `${CORS_PROXY}?apiurl=${encodeURIComponent(url)}`;
+  const proxiedUrl = `${PROXY_URL}/?destination=${encodeURIComponent(url)}`;
   const req = new Request(proxiedUrl);
   if (extraHeaders) {
     for (const [key, value] of Object.entries(extraHeaders)) {

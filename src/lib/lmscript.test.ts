@@ -55,7 +55,7 @@ describe("lmscript normalizers", () => {
     });
 
     expect(movie.streams[0]?.label).toBe("1080p");
-    expect(movie.streams[0]?.url).toBe("/api/stream?movieId=99");
+    expect(movie.streams[0]?.url).toBe("https://cdn.example.com/video-1080.m3u8");
     expect(movie.subtitles).toHaveLength(2);
     expect(movie.subtitles[0]?.proxyUrl).toBe("/api/subtitles?movieId=99&subtitleId=sub-en");
   });

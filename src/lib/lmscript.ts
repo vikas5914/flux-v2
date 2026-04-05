@@ -401,10 +401,10 @@ function normalizeSubtitles(raw: unknown, movieId: number): MovieSubtitleTrack[]
 
 async function encryptImageUrls<T extends MovieCard>(movie: T): Promise<T> {
   const { buildImageProxyUrl } = await import("./crypto.server");
-  const [posterUrl, backdropUrl] = await Promise.all([
-    movie.posterUrl ? buildImageProxyUrl(resolveLmscriptUrl(movie.posterUrl)) : "",
-    movie.backdropUrl ? buildImageProxyUrl(resolveLmscriptUrl(movie.backdropUrl)) : "",
-  ]);
+  const posterUrl = movie.posterUrl ? buildImageProxyUrl(resolveLmscriptUrl(movie.posterUrl)) : "";
+  const backdropUrl = movie.backdropUrl
+    ? buildImageProxyUrl(resolveLmscriptUrl(movie.backdropUrl))
+    : "";
   return { ...movie, posterUrl, backdropUrl };
 }
 
@@ -469,12 +469,10 @@ export const getMovieDetails = createServerFn({ method: "GET" })
 
     // Encrypt stream URLs and image URLs into proxy URLs
     const encryptedMovie = await encryptImageUrls(movie);
-    encryptedMovie.streams = await Promise.all(
-      encryptedMovie.streams.map(async (stream) => ({
-        ...stream,
-        url: await buildStreamProxyUrl(resolveLmscriptUrl(stream.url)),
-      })),
-    );
+    encryptedMovie.streams = encryptedMovie.streams.map((stream) => ({
+      ...stream,
+      url: buildStreamProxyUrl(resolveLmscriptUrl(stream.url)),
+    }));
 
     return encryptedMovie;
   });

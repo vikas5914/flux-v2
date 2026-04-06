@@ -80,6 +80,24 @@ a {
   overflow: hidden;
 }
 
+/* Video player initial loading bar */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Remove default videojs border radius and border ring */
+.media-default-skin--video {
+  --media-video-border-radius: 0;
+  --media-border-radius: 0;
+  --media-border-color: transparent;
+  --media-surface-outer-border-color: transparent;
+}
+
 /* Video player quality label */
 .media-quality-label {
   font-family: Arial, Helvetica, sans-serif;

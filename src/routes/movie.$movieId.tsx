@@ -91,7 +91,9 @@ function MovieDetailsContent() {
 
       <main className="pt-14">
         <div className="relative h-[50vh] min-h-[280px] sm:min-h-[400px]">
-          <img src={movie.backdropUrl} alt={movie.title} className="h-full w-full object-cover" />
+          {movie.backdropUrl && (
+            <img src={movie.backdropUrl} alt={movie.title} className="h-full w-full object-cover" />
+          )}
           <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
 
           <div className="absolute top-6 inset-x-0 z-10">
@@ -110,11 +112,13 @@ function MovieDetailsContent() {
         <div className="relative z-10 mx-auto -mt-32 max-w-6xl px-6">
           <div className="flex flex-col gap-8 md:flex-row">
             <div className="hidden shrink-0 md:block">
-              <img
-                src={movie.posterUrl}
-                alt={movie.title}
-                className="h-72 w-48 rounded object-cover"
-              />
+              {movie.posterUrl && (
+                <img
+                  src={movie.posterUrl}
+                  alt={movie.title}
+                  className="h-72 w-48 rounded object-cover"
+                />
+              )}
             </div>
 
             <div className="flex-1">

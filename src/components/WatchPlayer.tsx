@@ -523,6 +523,21 @@ function VolumePopover() {
 }
 
 // ---------------------------------------------------------------------------
+// Initial loading bar (shown until the m3u8 is loaded and video can play)
+// ---------------------------------------------------------------------------
+
+function InitialLoadingIndicator() {
+  const canPlay = usePlayer((s) => s.canPlay);
+  if (canPlay) return null;
+
+  return (
+    <div className="absolute inset-x-0 top-0 z-20 h-1 overflow-hidden bg-white/10">
+      <div className="h-full w-1/3 animate-[shimmer_1.2s_ease-in-out_infinite] bg-[#f6821f]" />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Player skin (ejected from default VideoSkin, with custom menus added)
 // ---------------------------------------------------------------------------
 
@@ -548,7 +563,9 @@ function PlayerSkin({
           ))}
         </Video>
 
-        <Poster src={movie.backdropUrl} />
+        {movie.backdropUrl && <Poster src={movie.backdropUrl} />}
+
+        <InitialLoadingIndicator />
 
         <BufferingIndicator
           render={(props) => (

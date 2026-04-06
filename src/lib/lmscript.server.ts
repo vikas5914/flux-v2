@@ -13,13 +13,10 @@ export function resolveLmscriptUrl(value: string) {
   return new URL(value, LMSCRIPT_ORIGIN).toString();
 }
 
+const CORS_PROXY = "https://proxy.killcors.com/?url=";
 const PROXY_URL = process.env.PROXY_URL || "http://localhost:3000";
 
-/**
- * Fetch from an upstream URL via the destination proxy.
- */
-function fetchUpstream(url: string, extraHeaders?: Record<string, string>) {
-  const proxiedUrl = `${PROXY_URL}/?destination=${encodeURIComponent(url)}`;
+function fetchViaProxy(proxiedUrl: string, extraHeaders?: Record<string, string>) {
   const req = new Request(proxiedUrl);
   if (extraHeaders) {
     for (const [key, value] of Object.entries(extraHeaders)) {
@@ -29,8 +26,16 @@ function fetchUpstream(url: string, extraHeaders?: Record<string, string>) {
   return fetch(req);
 }
 
-export async function fetchLmscriptJson(path: string) {
-  const response = await fetchUpstream(`${LMSCRIPT_API_BASE}${path}`, {
+function fetchViaCorsProxy(url: string, extraHeaders?: Record<string, string>) {
+  return fetchViaProxy(`${CORS_PROXY}${encodeURIComponent(url)}`, extraHeaders);
+}
+
+function fetchViaEnvProxy(url: string, extraHeaders?: Record<string, string>) {
+  return fetchViaProxy(`${PROXY_URL}/?destination=${encodeURIComponent(url)}`, extraHeaders);
+}
+
+async function fetchLmscriptJsonVia(fetcher: typeof fetchViaCorsProxy, path: string) {
+  const response = await fetcher(`${LMSCRIPT_API_BASE}${path}`, {
     accept: "application/json",
   });
 
@@ -41,8 +46,12 @@ export async function fetchLmscriptJson(path: string) {
   return response.json();
 }
 
+export const fetchLmscriptJson = (path: string) => fetchLmscriptJsonVia(fetchViaCorsProxy, path);
+export const fetchLmscriptDetailJson = (path: string) =>
+  fetchLmscriptJsonVia(fetchViaEnvProxy, path);
+
 export async function fetchLmscriptText(url: string) {
-  const response = await fetchUpstream(resolveLmscriptUrl(url), {
+  const response = await fetchViaEnvProxy(resolveLmscriptUrl(url), {
     accept: "text/vtt,text/plain;q=0.9,*/*;q=0.1",
   });
 
@@ -54,5 +63,5 @@ export async function fetchLmscriptText(url: string) {
 }
 
 export async function fetchLmscript(url: string) {
-  return fetchUpstream(resolveLmscriptUrl(url));
+  return fetchViaEnvProxy(resolveLmscriptUrl(url));
 }

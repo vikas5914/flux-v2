@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import "@videojs/react/video/skin.css";
 import {
   createPlayer,
@@ -19,6 +19,7 @@ import {
   AlertDialog,
   VolumeSlider,
   usePlayer,
+  usePlayerContext,
 } from "@videojs/react";
 import { Video, videoFeatures } from "@videojs/react/video";
 import { selectSource, selectTextTrack } from "@videojs/core/dom";
@@ -386,16 +387,9 @@ function QualityMenu({ movie }: { movie: MovieDetail }) {
 
   return (
     <Popover.Root side="top" align="center">
-      <Tooltip.Root side="top">
-        <Tooltip.Trigger
-          render={
-            <Popover.Trigger render={<Button aria-label="Quality" />}>
-              <span className="media-quality-label">HD</span>
-            </Popover.Trigger>
-          }
-        />
-        <Tooltip.Popup className="media-surface media-tooltip">Quality</Tooltip.Popup>
-      </Tooltip.Root>
+      <Popover.Trigger render={<Button aria-label="Quality" title="Quality" />}>
+        <span className="media-quality-label">HD</span>
+      </Popover.Trigger>
       <Popover.Popup className="media-surface media-popover media-popover--menu">
         <ul className="media-menu" role="menu">
           {movie.streams.map((stream) => (
@@ -448,18 +442,17 @@ function SubtitleMenu({ subtitles }: { subtitles: MovieSubtitleTrack[] }) {
 
   return (
     <Popover.Root side="top" align="center">
-      <Tooltip.Root side="top">
-        <Tooltip.Trigger
-          render={
-            <Popover.Trigger
-              render={<Button data-active={isShowing ? "" : undefined} aria-label="Subtitles" />}
-            >
-              <span className="media-quality-label">CC</span>
-            </Popover.Trigger>
-          }
-        />
-        <Tooltip.Popup className="media-surface media-tooltip">Subtitles</Tooltip.Popup>
-      </Tooltip.Root>
+      <Popover.Trigger
+        render={
+          <Button
+            data-active={isShowing ? "" : undefined}
+            aria-label="Subtitles"
+            title="Subtitles"
+          />
+        }
+      >
+        <span className="media-quality-label">CC</span>
+      </Popover.Trigger>
       <Popover.Popup className="media-surface media-popover media-popover--menu">
         <ul className="media-menu" role="menu">
           <li role="menuitem">
@@ -523,6 +516,113 @@ function VolumePopover() {
 }
 
 // ---------------------------------------------------------------------------
+// Keyboard shortcuts (space, arrows, m, f, c, j/k/l, 0-9, Home/End)
+// ---------------------------------------------------------------------------
+
+function PlayerHotkeys() {
+  const { store } = usePlayerContext();
+
+  useEffect(() => {
+    function isEditableTarget(target: EventTarget | null): boolean {
+      if (!(target instanceof HTMLElement)) return false;
+      const tag = target.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+      if (target.isContentEditable) return true;
+      return false;
+    }
+
+    function togglePlay(state: any) {
+      if (state.paused) state.play();
+      else state.pause();
+    }
+
+    function clamp(value: number, min: number, max: number) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.defaultPrevented) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (isEditableTarget(event.target)) return;
+
+      const state = store.state as any;
+      const key = event.key;
+
+      switch (key) {
+        case " ":
+        case "Spacebar":
+        case "k":
+        case "K":
+          event.preventDefault();
+          togglePlay(state);
+          return;
+        case "ArrowLeft":
+          event.preventDefault();
+          state.seek?.(clamp((state.currentTime ?? 0) - SEEK_TIME, 0, state.duration ?? Infinity));
+          return;
+        case "ArrowRight":
+          event.preventDefault();
+          state.seek?.(clamp((state.currentTime ?? 0) + SEEK_TIME, 0, state.duration ?? Infinity));
+          return;
+        case "j":
+        case "J":
+          event.preventDefault();
+          state.seek?.(clamp((state.currentTime ?? 0) - SEEK_TIME, 0, state.duration ?? Infinity));
+          return;
+        case "l":
+        case "L":
+          event.preventDefault();
+          state.seek?.(clamp((state.currentTime ?? 0) + SEEK_TIME, 0, state.duration ?? Infinity));
+          return;
+        case "ArrowUp":
+          event.preventDefault();
+          state.setVolume?.(clamp((state.volume ?? 0) + 0.1, 0, 1));
+          return;
+        case "ArrowDown":
+          event.preventDefault();
+          state.setVolume?.(clamp((state.volume ?? 0) - 0.1, 0, 1));
+          return;
+        case "m":
+        case "M":
+          event.preventDefault();
+          state.toggleMuted?.();
+          return;
+        case "f":
+        case "F":
+          event.preventDefault();
+          if (state.fullscreen) state.exitFullscreen?.();
+          else state.requestFullscreen?.();
+          return;
+        case "c":
+        case "C":
+          event.preventDefault();
+          state.toggleSubtitles?.();
+          return;
+        case "Home":
+          event.preventDefault();
+          state.seek?.(0);
+          return;
+        case "End":
+          event.preventDefault();
+          if (state.duration) state.seek?.(state.duration);
+          return;
+      }
+
+      if (key >= "0" && key <= "9") {
+        event.preventDefault();
+        const digit = Number(key);
+        if (state.duration) state.seek?.((state.duration * digit) / 10);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [store]);
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Initial loading bar (shown until the m3u8 is loaded and video can play)
 // ---------------------------------------------------------------------------
 
@@ -548,9 +648,34 @@ function PlayerSkin({
   movie: MovieDetail;
   englishSubs: MovieSubtitleTrack[];
 }) {
+  const handleContainerClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    // Ignore clicks that originate inside controls, popovers, dialogs, or buttons.
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+    if (
+      target.closest(".media-controls") ||
+      target.closest(".media-popover") ||
+      target.closest(".media-error") ||
+      target.closest("button") ||
+      target.closest('[role="menu"]')
+    ) {
+      return;
+    }
+    // Use the underlying <video> element to toggle. We can't easily reach the
+    // store from here, so dispatch via the native element instead.
+    const video = event.currentTarget.querySelector("video");
+    if (!video) return;
+    if (video.paused) void video.play();
+    else video.pause();
+  }, []);
+
   return (
     <Player.Provider>
-      <Player.Container className="media-default-skin media-default-skin--video">
+      <PlayerHotkeys />
+      <Player.Container
+        className="media-default-skin media-default-skin--video"
+        onClick={handleContainerClick}
+      >
         <Video src={movie.streams[0].url} playsInline crossOrigin="anonymous">
           {englishSubs.map((sub, i) => (
             <track

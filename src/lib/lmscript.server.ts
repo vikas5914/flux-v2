@@ -13,7 +13,6 @@ export function resolveLmscriptUrl(value: string) {
   return new URL(value, LMSCRIPT_ORIGIN).toString();
 }
 
-const CORS_PROXY = "https://proxy.killcors.com/?url=";
 const PROXY_URL = process.env.PROXY_URL || "http://localhost:3000";
 
 function fetchViaProxy(proxiedUrl: string, extraHeaders?: Record<string, string>) {
@@ -26,15 +25,11 @@ function fetchViaProxy(proxiedUrl: string, extraHeaders?: Record<string, string>
   return fetch(req);
 }
 
-function fetchViaCorsProxy(url: string, extraHeaders?: Record<string, string>) {
-  return fetchViaProxy(`${CORS_PROXY}${encodeURIComponent(url)}`, extraHeaders);
-}
-
 function fetchViaEnvProxy(url: string, extraHeaders?: Record<string, string>) {
   return fetchViaProxy(`${PROXY_URL}/?destination=${encodeURIComponent(url)}`, extraHeaders);
 }
 
-async function fetchLmscriptJsonVia(fetcher: typeof fetchViaCorsProxy, path: string) {
+async function fetchLmscriptJsonVia(fetcher: typeof fetchViaEnvProxy, path: string) {
   const response = await fetcher(`${LMSCRIPT_API_BASE}${path}`, {
     accept: "application/json",
   });
@@ -46,7 +41,7 @@ async function fetchLmscriptJsonVia(fetcher: typeof fetchViaCorsProxy, path: str
   return response.json();
 }
 
-export const fetchLmscriptJson = (path: string) => fetchLmscriptJsonVia(fetchViaCorsProxy, path);
+export const fetchLmscriptJson = (path: string) => fetchLmscriptJsonVia(fetchViaEnvProxy, path);
 export const fetchLmscriptDetailJson = (path: string) =>
   fetchLmscriptJsonVia(fetchViaEnvProxy, path);
 

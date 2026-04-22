@@ -8,114 +8,130 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as WatchMovieIdRouteImport } from "./routes/watch.$movieId";
-import { Route as MovieMovieIdRouteImport } from "./routes/movie.$movieId";
-import { Route as ApiSubtitlesRouteImport } from "./routes/api/subtitles";
-import { Route as ApiImageRouteImport } from "./routes/api/image";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as WatchMovieIdRouteImport } from './routes/watch.$movieId'
+import { Route as MovieMovieIdRouteImport } from './routes/movie.$movieId'
+import { Route as ApiSubtitlesRouteImport } from './routes/api/subtitles'
+import { Route as ApiImageRouteImport } from './routes/api/image'
 
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const WatchMovieIdRoute = WatchMovieIdRouteImport.update({
-  id: "/watch/$movieId",
-  path: "/watch/$movieId",
+  id: '/watch/$movieId',
+  path: '/watch/$movieId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const MovieMovieIdRoute = MovieMovieIdRouteImport.update({
-  id: "/movie/$movieId",
-  path: "/movie/$movieId",
+  id: '/movie/$movieId',
+  path: '/movie/$movieId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiSubtitlesRoute = ApiSubtitlesRouteImport.update({
-  id: "/api/subtitles",
-  path: "/api/subtitles",
+  id: '/api/subtitles',
+  path: '/api/subtitles',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiImageRoute = ApiImageRouteImport.update({
-  id: "/api/image",
-  path: "/api/image",
+  id: '/api/image',
+  path: '/api/image',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/api/image": typeof ApiImageRoute;
-  "/api/subtitles": typeof ApiSubtitlesRoute;
-  "/movie/$movieId": typeof MovieMovieIdRoute;
-  "/watch/$movieId": typeof WatchMovieIdRoute;
+  '/': typeof IndexRoute
+  '/api/image': typeof ApiImageRoute
+  '/api/subtitles': typeof ApiSubtitlesRoute
+  '/movie/$movieId': typeof MovieMovieIdRoute
+  '/watch/$movieId': typeof WatchMovieIdRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/api/image": typeof ApiImageRoute;
-  "/api/subtitles": typeof ApiSubtitlesRoute;
-  "/movie/$movieId": typeof MovieMovieIdRoute;
-  "/watch/$movieId": typeof WatchMovieIdRoute;
+  '/': typeof IndexRoute
+  '/api/image': typeof ApiImageRoute
+  '/api/subtitles': typeof ApiSubtitlesRoute
+  '/movie/$movieId': typeof MovieMovieIdRoute
+  '/watch/$movieId': typeof WatchMovieIdRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/api/image": typeof ApiImageRoute;
-  "/api/subtitles": typeof ApiSubtitlesRoute;
-  "/movie/$movieId": typeof MovieMovieIdRoute;
-  "/watch/$movieId": typeof WatchMovieIdRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/api/image': typeof ApiImageRoute
+  '/api/subtitles': typeof ApiSubtitlesRoute
+  '/movie/$movieId': typeof MovieMovieIdRoute
+  '/watch/$movieId': typeof WatchMovieIdRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/api/image" | "/api/subtitles" | "/movie/$movieId" | "/watch/$movieId";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/api/image" | "/api/subtitles" | "/movie/$movieId" | "/watch/$movieId";
-  id: "__root__" | "/" | "/api/image" | "/api/subtitles" | "/movie/$movieId" | "/watch/$movieId";
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/api/image'
+    | '/api/subtitles'
+    | '/movie/$movieId'
+    | '/watch/$movieId'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/api/image'
+    | '/api/subtitles'
+    | '/movie/$movieId'
+    | '/watch/$movieId'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/image'
+    | '/api/subtitles'
+    | '/movie/$movieId'
+    | '/watch/$movieId'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  ApiImageRoute: typeof ApiImageRoute;
-  ApiSubtitlesRoute: typeof ApiSubtitlesRoute;
-  MovieMovieIdRoute: typeof MovieMovieIdRoute;
-  WatchMovieIdRoute: typeof WatchMovieIdRoute;
+  IndexRoute: typeof IndexRoute
+  ApiImageRoute: typeof ApiImageRoute
+  ApiSubtitlesRoute: typeof ApiSubtitlesRoute
+  MovieMovieIdRoute: typeof MovieMovieIdRoute
+  WatchMovieIdRoute: typeof WatchMovieIdRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/watch/$movieId": {
-      id: "/watch/$movieId";
-      path: "/watch/$movieId";
-      fullPath: "/watch/$movieId";
-      preLoaderRoute: typeof WatchMovieIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/movie/$movieId": {
-      id: "/movie/$movieId";
-      path: "/movie/$movieId";
-      fullPath: "/movie/$movieId";
-      preLoaderRoute: typeof MovieMovieIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/subtitles": {
-      id: "/api/subtitles";
-      path: "/api/subtitles";
-      fullPath: "/api/subtitles";
-      preLoaderRoute: typeof ApiSubtitlesRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/image": {
-      id: "/api/image";
-      path: "/api/image";
-      fullPath: "/api/image";
-      preLoaderRoute: typeof ApiImageRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watch/$movieId': {
+      id: '/watch/$movieId'
+      path: '/watch/$movieId'
+      fullPath: '/watch/$movieId'
+      preLoaderRoute: typeof WatchMovieIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/movie/$movieId': {
+      id: '/movie/$movieId'
+      path: '/movie/$movieId'
+      fullPath: '/movie/$movieId'
+      preLoaderRoute: typeof MovieMovieIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/subtitles': {
+      id: '/api/subtitles'
+      path: '/api/subtitles'
+      fullPath: '/api/subtitles'
+      preLoaderRoute: typeof ApiSubtitlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/image': {
+      id: '/api/image'
+      path: '/api/image'
+      fullPath: '/api/image'
+      preLoaderRoute: typeof ApiImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,16 +141,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSubtitlesRoute: ApiSubtitlesRoute,
   MovieMovieIdRoute: MovieMovieIdRoute,
   WatchMovieIdRoute: WatchMovieIdRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }

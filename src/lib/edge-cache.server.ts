@@ -16,6 +16,7 @@ export async function withEdgeCache(
   }
 
   const response = await handler();
+  response.headers.set("X-Robots-Tag", "noindex, nofollow");
 
   if (response.status === 200) {
     try {

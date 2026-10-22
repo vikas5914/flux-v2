@@ -4,6 +4,11 @@
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  "assets": {
+    // The default 307s /<file>.html to /<file>, and Google Search Console
+    // verification needs public/google*.html served at its exact path.
+    "html_handling": "none",
+  },
   "observability": {
     "logs": {
       "enabled": true,
